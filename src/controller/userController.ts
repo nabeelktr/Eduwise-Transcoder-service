@@ -16,7 +16,6 @@ export default class TranscoderController {
         res.json()
         FFmpegTranscoder(file?.buffer);
 
-
     } catch (e: any) {
         next(e)
     }

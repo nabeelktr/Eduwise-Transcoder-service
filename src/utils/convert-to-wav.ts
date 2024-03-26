@@ -1,5 +1,6 @@
 import Ffmpeg from "fluent-ffmpeg";
 import * as path from "path";
+import * as fs from "fs";
 
 export const convertToWav = async (filePath: string): Promise<string> => {
     return new Promise<string>((resolve, reject) => {

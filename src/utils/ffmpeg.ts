@@ -5,6 +5,8 @@ import * as path from "path";
 import ffmpeg from "fluent-ffmpeg";
 import { s3 } from "../config/s3/s3.config";
 import crypto from "crypto";
+import { convertToWav } from "./convert-to-wav";
+import { transcriber } from "./whisper-node";
 
 // Set ffmpeg path
 ffmpeg.setFfmpegPath("/usr/local/bin/ffmpeg");
@@ -24,15 +26,13 @@ export const FFmpegTranscoder = async (file: any) => {
     const randomName = (bytes = 32) =>
       crypto.randomBytes(bytes).toString("hex");
     const fileName = randomName();
-    const directoryPath = "./input/";
+    const directoryPath = "../../../../input/";
     const filePath = path.join(directoryPath, `${fileName}.mp4`);
 
-    // ensure the directory exists
     if (!fs.existsSync(directoryPath)) {
       fs.mkdirSync(directoryPath, { recursive: true });
     }
 
-    // saving the file 
     fs.writeFile(filePath, file, async (err) => {
       if (err) {
         console.error("Error saving file:", err);
@@ -42,6 +42,13 @@ export const FFmpegTranscoder = async (file: any) => {
 
       try {
         await transcodeWithFFmpeg(fileName, filePath);
+
+        const wavFilePath = await convertToWav(filePath);
+        const vttFilePath = await transcriber(wavFilePath);
+        
+        console.log(`Deleting locally uploaded mp4 file`);
+        fs.unlinkSync(filePath);
+        console.log(`Deleted locally uploaded mp4 file`);
       } catch (error) {
         console.error("Error transcoding with FFmpeg:", error);
       }
@@ -52,7 +59,7 @@ export const FFmpegTranscoder = async (file: any) => {
 };
 
 const transcodeWithFFmpeg = async (fileName: string, filePath: string) => {
-  const directoryPath = `output/hls/${fileName}`;
+  const directoryPath = `../../../../output/hls/${fileName}`;
   if (!fs.existsSync(directoryPath)) {
     fs.mkdirSync(directoryPath, { recursive: true });
   }
@@ -75,7 +82,6 @@ const transcodeWithFFmpeg = async (fileName: string, filePath: string) => {
       audioBitrate: "192k",
     },
   ];
-
 
   const variantPlaylists: { resolution: string; outputFileName: string }[] = [];
 
@@ -127,12 +133,8 @@ const transcodeWithFFmpeg = async (fileName: string, filePath: string) => {
 
   const masterPlaylistFileName = `${fileName}_master.m3u8`;
 
-  const masterPlaylistPath = `output/hls/${masterPlaylistFileName}`;
+  const masterPlaylistPath = `${directoryPath}/${masterPlaylistFileName}`;
   fs.writeFileSync(masterPlaylistPath, masterPlaylist);
   console.log(`HLS master m3u8 playlist generated`);
-
-
-  console.log(`Deleting locally uploaded mp4 file`);
-  fs.unlinkSync(filePath);
-  console.log(`Deleted locally uploaded mp4 file`);
+  return;
 };
