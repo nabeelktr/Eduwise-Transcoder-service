@@ -1,4 +1,6 @@
 export interface Transcoder {
+    _id?: string;
+    generatedName?: string;
     fileName: string;
     status: Status;
     createdAt?: string | Date;
@@ -11,5 +13,6 @@ export enum Status{
     transcoding = "Transcoding",
     subtitle = "Subtitle generating",
     completed = "Uploaded successfully",
+    finishing = "Finishing process",
     error = "Error occured"
 }

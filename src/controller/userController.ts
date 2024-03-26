@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { ITranscoderService } from "../interfaces/iTransService";
-import { CustomRequest } from "../interfaces/iRequest";
+import { CustomRequest } from "../interfaces/custom";
 import fs from 'fs';
 import { FFmpegTranscoder } from "../utils/ffmpeg";
+import { Transcoder } from "../model/transcoder.entities";
 
 
 export default class TranscoderController {
@@ -12,10 +13,9 @@ export default class TranscoderController {
     try {
         const file: any = req.file  
         const instructorId = req?.userId as string;
-        const response = await this.service.addFileDetails(file?.originalname, instructorId)
+        const response: any = await this.service.addFileDetails(file?.originalname, instructorId)
         res.json()
-        FFmpegTranscoder(file?.buffer);
-
+        this.service.transcodeMedia(file?.buffer, response?._id);
     } catch (e: any) {
         next(e)
     }

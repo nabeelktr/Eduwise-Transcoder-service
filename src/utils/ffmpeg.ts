@@ -1,24 +1,15 @@
 import "dotenv/config";
-import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import * as fs from "fs";
 import * as path from "path";
 import ffmpeg from "fluent-ffmpeg";
-import { s3 } from "../config/s3/s3.config";
 import crypto from "crypto";
-import { convertToWav } from "./convert-to-wav";
-import { transcriber } from "./whisper-node";
+
 
 // Set ffmpeg path
 ffmpeg.setFfmpegPath("/usr/local/bin/ffmpeg");
 
-export interface S3Params {
-  Bucket: string;
-  Key: string;
-  Body: any;
-  ContentType: any;
-}
 
-export const FFmpegTranscoder = async (file: any) => {
+export const FFmpegTranscoder = async (file: any): Promise<any> => {
   try {
     console.log("Starting script");
     console.time("req_time");
@@ -26,40 +17,51 @@ export const FFmpegTranscoder = async (file: any) => {
     const randomName = (bytes = 32) =>
       crypto.randomBytes(bytes).toString("hex");
     const fileName = randomName();
-    const directoryPath = "../../../../input/";
+    const directoryPath = path.join(__dirname, "..", "..", "input");
     const filePath = path.join(directoryPath, `${fileName}.mp4`);
 
     if (!fs.existsSync(directoryPath)) {
       fs.mkdirSync(directoryPath, { recursive: true });
     }
 
-    fs.writeFile(filePath, file, async (err) => {
-      if (err) {
-        console.error("Error saving file:", err);
-        throw err;
-      }
-      console.log("File saved successfully:", filePath);
+    const paths = await new Promise<any>((resolve, reject) => {
+      fs.writeFile(filePath, file, async (err) => {
+        if (err) {
+          console.error("Error saving file:", err);
+          throw err;
+        }
+        console.log("File saved successfully:", filePath);
 
-      try {
-        await transcodeWithFFmpeg(fileName, filePath);
-
-        const wavFilePath = await convertToWav(filePath);
-        const vttFilePath = await transcriber(wavFilePath);
-        
-        console.log(`Deleting locally uploaded mp4 file`);
-        fs.unlinkSync(filePath);
-        console.log(`Deleted locally uploaded mp4 file`);
-      } catch (error) {
-        console.error("Error transcoding with FFmpeg:", error);
-      }
+        try {
+          const outputDirectoryPath = await transcodeWithFFmpeg(
+            fileName,
+            filePath
+          );
+          resolve({ directoryPath, filePath, fileName, outputDirectoryPath });
+          // const wavFilePath = await convertToWav(filePath);
+          // const vttFilePath = await transcriber(wavFilePath);
+          // console.log(`Deleting locally uploaded mp4 file`);
+          // fs.unlinkSync(filePath);
+          // console.log(`Deleted locally uploaded mp4 file`);
+        } catch (error) {
+          console.error("Error transcoding with FFmpeg:", error);
+        }
+      });
     });
+    return paths;
   } catch (e: any) {
     console.log(e);
   }
 };
 
 const transcodeWithFFmpeg = async (fileName: string, filePath: string) => {
-  const directoryPath = `../../../../output/hls/${fileName}`;
+  const directoryPath = path.join(
+    __dirname,
+    "..",
+    "..",
+    `output/hls/${fileName}`
+  );
+  // const directoryPath = `../output/hls/${fileName}`;
   if (!fs.existsSync(directoryPath)) {
     fs.mkdirSync(directoryPath, { recursive: true });
   }
@@ -136,5 +138,5 @@ const transcodeWithFFmpeg = async (fileName: string, filePath: string) => {
   const masterPlaylistPath = `${directoryPath}/${masterPlaylistFileName}`;
   fs.writeFileSync(masterPlaylistPath, masterPlaylist);
   console.log(`HLS master m3u8 playlist generated`);
-  return;
+  return directoryPath;
 };

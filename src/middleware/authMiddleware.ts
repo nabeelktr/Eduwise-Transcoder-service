@@ -1,6 +1,6 @@
 import { NextFunction, Response } from "express";
 import { AuthClient } from "../config/grpc-client/auth.client";
-import { CustomRequest } from "../interfaces/iRequest";
+import { CustomRequest } from "../interfaces/custom";
 
 export const isValidated = (
   req: CustomRequest,

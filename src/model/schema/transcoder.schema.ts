@@ -9,9 +9,12 @@ const transcoderSchema: Schema<Transcoder> = new mongoose.Schema(
     fileName: {
       type: String,
     },
+    generatedName: {
+      type: String,
+    },
     status: {
         type: String,
-        enum: ["Transcoding", "Subtitle generating", "Uploaded successfully", "Error occured"],
+        enum: [Status.transcoding, Status.completed, Status.subtitle, Status.completed, Status.error, Status.finishing],
         default: Status.transcoding
     },
     videoUrl: {
