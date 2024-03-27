@@ -13,11 +13,14 @@ import { rimraf } from "rimraf";
 export class TranscoderService implements ITranscoderService {
   constructor(private repository: ITranscoderRepository) {}
 
+  deleteData(id: string): Promise<Transcoder | null> {
+    return this.repository.deleteData(id);
+  }
+
   async transcodeMedia(file: File, id: string) {
     try {
       const { filePath, fileName, outputDirectoryPath, directoryPath } =
         await FFmpegTranscoder(file);
-      //update status
 
       await this.repository.updateStatus(id, Status.subtitle, {generatedName: fileName});
       const wavFilePath = await convertToWav(filePath);
@@ -50,11 +53,11 @@ export class TranscoderService implements ITranscoderService {
         }
       }
 
-      const vttFile = fs.createReadStream(filePath);
+      const vttFileBuffer = fs.readFileSync(`${vttFilePath}`);
       const params: S3Params = {
         Bucket: process.env.BUCKET_NAME || "",
         Key: `media/vtt/${fileName}.vtt`,
-        Body: vttFile,
+        Body: vttFileBuffer,
         ContentType: "text/vtt",
       };
       try {
@@ -73,7 +76,7 @@ export class TranscoderService implements ITranscoderService {
       console.log(`Deleted locally saved files`);
 
       const videoUrl = `https://eduwise.s3.ap-south-1.amazonaws.com/media/hls/${fileName}/${fileName}_master.m3u8`
-      const subtitleUrl = `https://eduwise.s3.ap-south-1.amazonaws.com/media/vtt/${fileName}.wav.vtt`
+      const subtitleUrl = `https://eduwise.s3.ap-south-1.amazonaws.com/media/vtt/${fileName}.vtt`
       await this.repository.updateStatus(id, Status.completed, {videoUrl, subtitleUrl});
     } catch (e: any) {
       await this.repository.updateStatus(id, Status.error, {});

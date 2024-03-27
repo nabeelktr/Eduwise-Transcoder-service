@@ -23,6 +23,7 @@ TranscoderRoute.post(
 );
 
 TranscoderRoute.get("/getData",isValidated, controller.getData.bind(controller))
+TranscoderRoute.delete("/deleteData/:id",isValidated, controller.deleteData.bind(controller))
 
 
 export default TranscoderRoute

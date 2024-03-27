@@ -7,6 +7,7 @@ import logger from 'morgan'
 import TranscoderRoute from './route/route';
 import cookieParse from 'cookie-parser';
 import { connectDB } from './config/mongodb/db';
+import { errorHandler } from "@nabeelktr/error-handler"
 
 
 class App{
@@ -29,7 +30,8 @@ class App{
         this.app.use(compression());
         this.app.use(helmet());
         this.app.use(logger('dev'));
-        this.app.use(cookieParse())
+        this.app.use(cookieParse());
+        this.app.use(errorHandler)
     }
 
     private routes():void{

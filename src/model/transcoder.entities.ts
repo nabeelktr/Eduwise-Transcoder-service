@@ -12,7 +12,7 @@ export interface Transcoder {
 export enum Status{
     transcoding = "Transcoding",
     subtitle = "Subtitle generating",
-    completed = "Uploaded successfully",
+    completed = "Uploaded",
     finishing = "Finishing process",
     error = "Error occured"
 }
