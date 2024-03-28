@@ -1,3 +1,4 @@
+import { DBConnectionError } from "@nabeelktr/error-handler";
 import { Data, ITranscoderRepository } from "../interfaces/iTransRepository";
 import TranscoderModel from "../model/schema/transcoder.schema";
 import { Status, Transcoder } from "../model/transcoder.entities";
@@ -9,7 +10,7 @@ export class TranscoderRepository implements ITranscoderRepository {
         const response = await TranscoderModel.findByIdAndDelete(id)
         return response 
     }catch(e:any){
-   throw new Error("db error")
+      throw new DBConnectionError()
     }
   }
 
@@ -25,7 +26,7 @@ export class TranscoderRepository implements ITranscoderRepository {
     });
     return videoData;
 }catch(e:any){
-   throw new Error("db error")
+  throw new DBConnectionError()
 }
   }
 
@@ -34,7 +35,7 @@ export class TranscoderRepository implements ITranscoderRepository {
       const response = await TranscoderModel.find({ instructorId: id });
       return response;
     } catch (e: any) {
-   throw new Error("db error")
+      throw new DBConnectionError()
     }
   }
 
@@ -50,7 +51,7 @@ export class TranscoderRepository implements ITranscoderRepository {
       });
       return response;
     } catch (e: any) {
-      console.log(e);
+      throw new DBConnectionError()
     }
   }
 }

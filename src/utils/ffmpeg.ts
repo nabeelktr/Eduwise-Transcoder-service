@@ -69,19 +69,24 @@ const transcodeWithFFmpeg = async (fileName: string, filePath: string) => {
   // resolutions..
   const resolutions = [
     {
-      resolution: "320x180",
-      videoBitrate: "500k",
+      resolution: "256x144",
+      videoBitrate: "200k",
       audioBitrate: "64k",
     },
     {
-      resolution: "854x480",
-      videoBitrate: "1000k",
+      resolution: "640x360",
+      videoBitrate: "800k",
       audioBitrate: "128k",
     },
     {
       resolution: "1280x720",
       videoBitrate: "2500k",
       audioBitrate: "192k",
+    },
+    {
+      resolution: "1920x1080",
+      videoBitrate: "5000k",
+      audioBitrate: "256k",
     },
   ];
 
@@ -123,11 +128,13 @@ const transcodeWithFFmpeg = async (fileName: string, filePath: string) => {
     .map((variantPlaylist) => {
       const { resolution, outputFileName } = variantPlaylist;
       const bandwidth =
-        resolution === "320x180"
-          ? 676800
-          : resolution === "854x480"
-          ? 1353600
-          : 3230400;
+      resolution === "256x144"
+      ? 264000
+      : resolution === "640x360"
+      ? 1024000
+      : resolution === "1280x720"
+      ? 3072000
+      : 5500000;
       return `#EXT-X-STREAM-INF:BANDWIDTH=${bandwidth},RESOLUTION=${resolution}\n${outputFileName}`;
     })
     .join("\n");

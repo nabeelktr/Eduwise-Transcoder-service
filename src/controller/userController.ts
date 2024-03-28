@@ -4,6 +4,9 @@ import { CustomRequest } from "../interfaces/custom";
 import fs from "fs";
 import { FFmpegTranscoder } from "../utils/ffmpeg";
 import { Transcoder } from "../model/transcoder.entities";
+import { NotAuthorizedError } from "@nabeelktr/error-handler";
+import { statusCode } from "../utils/constants/enums";
+
 
 export default class TranscoderController {
   constructor(private service: ITranscoderService) {}
@@ -20,7 +23,7 @@ export default class TranscoderController {
         file?.originalname,
         instructorId
       );
-      res.json();
+      res.status(statusCode.OK).json();
       this.service.transcodeMedia(file?.buffer, response?._id);
     } catch (e: any) {
       next(e);
@@ -31,9 +34,9 @@ export default class TranscoderController {
     try {
       const instructorId = req?.userId as string;
       const response = await this.service.getData(instructorId);
-      res.status(201).json(response);
+      res.status(statusCode.Accepted).json(response);
     } catch (e: any) {
-      next(e);
+      next(e)
     }
   };
 
@@ -41,9 +44,9 @@ export default class TranscoderController {
     try {
       const mediaId = req?.params.id as string;
       const response = await this.service.deleteData(mediaId);
-      res.status(201).json(response);
+      res.status(statusCode.OK).json(response);
     } catch (e: any) {
-      next(e);
+      throw new NotAuthorizedError()
     }
   };
 }

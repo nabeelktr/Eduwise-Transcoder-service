@@ -49,7 +49,7 @@ export class TranscoderService implements ITranscoderService {
           fs.unlinkSync(filePaths);
           console.log(`Uploaded ${file} to S3`);
         } catch (err) {
-          console.error(`Error uploading ${file} to S3:`, err);
+          throw new Error("s3 error")
         }
       }
 
@@ -65,7 +65,7 @@ export class TranscoderService implements ITranscoderService {
         const rslt = await s3.send(command);
         console.log(`Uploaded vtt to S3`);
       } catch (err) {
-        console.error(`Error uploading vtt to S3:`, err);
+        throw new Error("error while uploading vtt into s3")
       }
 
       console.log(`Deleting locally saved files`);
