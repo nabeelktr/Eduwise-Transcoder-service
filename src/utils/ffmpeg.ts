@@ -134,7 +134,7 @@ const transcodeWithFFmpeg = async (fileName: string, filePath: string) => {
       ? 1024000
       : resolution === "1280x720"
       ? 3072000
-      : 5500000;
+      : 5500000;``
       return `#EXT-X-STREAM-INF:BANDWIDTH=${bandwidth},RESOLUTION=${resolution}\n${outputFileName}`;
     })
     .join("\n");
